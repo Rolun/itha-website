@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velldenar Project — Voice Acting Application</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background-image: url('/Background.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: #d4c9b0;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 7, 14, 0.78);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .container, .hero {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Hero banner */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 0 20px;
+    }
+    .hero h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: #e8d5a3;
+      letter-spacing: 0.06em;
+      text-shadow: 0 2px 18px rgba(0,0,0,0.8);
+    }
+    .hero p {
+      margin-top: 14px;
+      font-size: 1rem;
+      color: #b8a882;
+      max-width: 600px;
+      line-height: 1.7;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .intro {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #9e9070;
+      font-size: 0.95rem;
+      font-style: italic;
+    }
+
+    /* Section cards */
+    .section-card {
+      background: #16151e;
+      border: 1px solid #2a2738;
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #c9a84c;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #2a2738;
+    }
+
+    /* Form fields */
+    .field {
+      margin-bottom: 22px;
+    }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #a89d80;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+    label span.num {
+      color: #c9a84c;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      background: #0e0e12;
+      border: 1px solid #2e2b3d;
+      border-radius: 6px;
+      color: #d4c9b0;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.95rem;
+      padding: 11px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #c9a84c;
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    select option {
+      background: #16151e;
+    }
+
+    /* Sub-field (conditional follow-up) */
+    .sub-field {
+      display: none;
+      margin-top: 14px;
+      padding-left: 14px;
+      border-left: 2px solid #2a2738;
+    }
+    .sub-field label {
+      font-style: italic;
+      color: #7a7060;
+    }
+
+    /* Important note */
+    .notice {
+      background: #1a0f0f;
+      border: 1px solid #5c1f1f;
+      border-radius: 10px;
+      padding: 20px 28px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .notice .notice-title {
+      font-family: 'Cinzel', serif;
+      color: #c0392b;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .notice p {
+      font-size: 0.88rem;
+      color: #9e6a6a;
+      line-height: 1.7;
+    }
+
+    /* Submit button */
+    .submit-wrap {
+      text-align: center;
+    }
+    button[type="submit"] {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: #0e0e12;
+      background: linear-gradient(135deg, #c9a84c, #e0c46a);
+      border: none;
+      border-radius: 6px;
+      padding: 14px 48px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    button[type="submit"]:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    button[type="submit"]:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 520px) {
+      .hero h1 { font-size: 1.8rem; }
+      .section-card { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-content">
+      <h1>Velldenar Project</h1>
+      <p>Voice Acting Application Form — We are looking for volunteer voice actors for both major and side characters in our storytelling content on YouTube.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="intro">Please fill out the form below. Fields marked with * are required.</p>
+
+    <form id="myForm">
+
+      <!-- Basic Information -->
+      <div class="section-card">
+        <div class="section-title">Basic Information</div>
+
+        <div class="field">
+          <label for="1"><span class="num">1.</span> Discord Username *</label>
+          <input type="text" id="1" name="1" placeholder="e.g. username#0000" required>
+        </div>
+
+        <div class="field">
+          <label for="2"><span class="num">2.</span> Email Address <em>(optional)</em></label>
+          <input type="text" id="2" name="2" placeholder="your@email.com">
+        </div>
+
+        <div class="field">
+          <label for="3"><span class="num">3.</span> Time Zone / Country *</label>
+          <input type="text" id="3" name="3" placeholder="e.g. EST / United States" required>
+        </div>
+      </div>
+
+      <!-- Eligibility -->
+      <div class="section-card">
+        <div class="section-title">Eligibility</div>
+
+        <div class="field">
+          <label for="4"><span class="num">4.</span> Are you 18 years of age or older? *</label>
+          <select id="4" name="4" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Voice Acting Information -->
+      <div class="section-card">
+        <div class="section-title">Voice Acting Information</div>
+
+        <div class="field">
+          <label for="5"><span class="num">5.</span> Are you applying for: *</label>
+          <select id="5" name="5" required>
+            <option value="" disabled selected></option>
+            <option value="Major character role">Major character role</option>
+            <option value="Side character role">Side character role</option>
+            <option value="Either / no preference">Either / no preference</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="6"><span class="num">6.</span> Do you already have a preferred character in mind? *</label>
+          <select id="6" name="6" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <div class="sub-field" id="sub-6">
+            <label for="6a">If yes, please write the character name here:</label>
+            <input type="text" id="6a" name="6a" placeholder="Character name">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="7"><span class="num">7.</span> Do you have any previous voice acting experience? *</label>
+          <select id="7" name="7" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <div class="sub-field" id="sub-7">
+            <label for="7a">If yes, please describe it briefly:</label>
+            <input type="text" id="7a" name="7a" placeholder="Brief description">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="8"><span class="num">8.</span> What kind of roles do you enjoy voicing most?</label>
+          <select id="8" name="8">
+            <option value="" disabled selected></option>
+            <option value="Heroic / noble characters">Heroic / noble characters</option>
+            <option value="Dark / villainous characters">Dark / villainous characters</option>
+            <option value="Emotional / dramatic characters">Emotional / dramatic characters</option>
+            <option value="Calm / wise characters">Calm / wise characters</option>
+            <option value="Comic / lighthearted characters">Comic / lighthearted characters</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="sub-field" id="sub-8">
+            <label for="8a">Please describe:</label>
+            <input type="text" id="8a" name="8a" placeholder="Describe other role types">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="9"><span class="num">9.</span> What is your natural voice range? *</label>
+          <select id="9" name="9" required>
+            <option value="" disabled selected></option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+            <option value="Flexible / can do multiple ranges">Flexible / can do multiple ranges</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="10"><span class="num">10.</span> Are there any character types you would especially like to voice? *</label>
+          <input type="text" id="10" name="10" placeholder="e.g. wise elders, morally grey warriors..." required>
+        </div>
+      </div>
+
+      <!-- Language / Accent -->
+      <div class="section-card">
+        <div class="section-title">Language / Accent</div>
+
+        <div class="field">
+          <label for="11"><span class="num">11.</span> Are you fluent in English? *</label>
+          <select id="11" name="11" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="12"><span class="num">12.</span> Do you speak any other languages? *</label>
+          <input type="text" id="12" name="12" placeholder="e.g. Spanish, French, none..." required>
+        </div>
+
+        <div class="field">
+          <label for="13"><span class="num">13.</span> Do you have a natural accent, or are you able to perform any accents? If so, please describe them.</label>
+          <input type="text" id="13" name="13" placeholder="e.g. light Scottish accent, can also do German and Russian...">
+        </div>
+      </div>
+
+      <!-- Equipment -->
+      <div class="section-card">
+        <div class="section-title">Equipment</div>
+
+        <div class="field">
+          <label for="14"><span class="num">14.</span> Do you have a good-quality microphone? *</label>
+          <select id="14" name="14" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="15"><span class="num">15.</span> What microphone or recording setup do you use? *</label>
+          <input type="text" id="15" name="15" placeholder="e.g. Blue Yeti, phone mic, USB headset..." required>
+        </div>
+
+        <div class="field">
+          <label for="16"><span class="num">16.</span> Are you able to record in a quiet environment with minimal background noise? *</label>
+          <select id="16" name="16" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Availability -->
+      <div class="section-card">
+        <div class="section-title">Availability</div>
+
+        <div class="field">
+          <label for="17"><span class="num">17.</span> How available are you for recording? *</label>
+          <select id="17" name="17" required>
+            <option value="" disabled selected></option>
+            <option value="Very available">Very available</option>
+            <option value="Moderately available">Moderately available</option>
+            <option value="Limited availability">Limited availability</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="18"><span class="num">18.</span> Are you comfortable with occasional direction, retakes, or line adjustments? *</label>
+          <select id="18" name="18" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Usage Permission -->
+      <div class="section-card">
+        <div class="section-title">Usage Permission</div>
+
+        <div class="field">
+          <label for="19"><span class="num">19.</span> Are you okay with your voice being used in Velldenar Project videos published on YouTube? *</label>
+          <select id="19" name="19" required>
+            <option value="" disabled selected></option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Additional Comments -->
+      <div class="section-card">
+        <div class="section-title">Anything Else?</div>
+
+        <div class="field">
+          <label for="20"><span class="num">20.</span> Anything else you would like to share about yourself or your voice?</label>
+          <textarea id="20" name="20" placeholder="Optional — share anything you think is relevant..."></textarea>
+        </div>
+      </div>
+
+      <!-- Notice -->
+      <div class="notice">
+        <div class="notice-title">! Important Note !</div>
+        <p>This is a volunteer-based project for the Velldenar storytelling series and is currently not a paid position. Applicants must be 18 or older.</p>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit">Submit Application</button>
+      </div>
+
+    </form>
+
+  </div>
+
+  <script>
+    function toggleSubField(selectId, subId, triggerValue) {
+      const select = document.getElementById(selectId);
+      const sub = document.getElementById(subId);
+      const input = sub.querySelector("input, textarea");
+      function update() {
+        const show = select.value === triggerValue;
+        sub.style.display = show ? "block" : "none";
+        if (input) input.required = show;
+      }
+      select.addEventListener("change", update);
+      update();
+    }
+
+    toggleSubField("6", "sub-6", "Yes");
+    toggleSubField("7", "sub-7", "Yes");
+    toggleSubField("8", "sub-8", "Other");
+
+    document.getElementById("myForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const data = {
+        content: `
+ **New Voice Acting Application**
+
+**1. Discord Username:** ${document.getElementById("1").value}
+**2. Email:** ${document.getElementById("2").value}
+**3. Country/Timezone:** ${document.getElementById("3").value}
+**4. 18+?** ${document.getElementById("4").value}
+**5. Role:** ${document.getElementById("5").value}
+**6. Preferred Character?** ${document.getElementById("6").value}
+**6a.Character name?** ${document.getElementById("6a").value}
+**7. Experience?** ${document.getElementById("7").value}
+**7a.Describe Experience?** ${document.getElementById("7a").value}
+**8. Role Type:** ${document.getElementById("8").value}
+**8a.Other Role Type:** ${document.getElementById("8a").value}
+**9. Voice Range:** ${document.getElementById("9").value}
+**10.Desired Roles:** ${document.getElementById("10").value}
+**11.English Fluent:** ${document.getElementById("11").value}
+**12.Other Languages:** ${document.getElementById("12").value}
+**13.Accent:** ${document.getElementById("13").value}
+**14.Mic Quality:** ${document.getElementById("14").value}
+**15.Setup:** ${document.getElementById("15").value}
+**16.Quiet Environment:** ${document.getElementById("16").value}
+**17.Availability:** ${document.getElementById("17").value}
+**18.Direction OK:** ${document.getElementById("18").value}
+**19.Usage Permission:** ${document.getElementById("19").value}
+**20.Extra Info:** ${document.getElementById("20").value}
+`
+      };
+      try {
+        const btn = document.querySelector("button[type='submit']");
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+
+        await fetch("/api/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        window.location.href = "/thankyou.html";
+      } catch (err) {
+        const btn = document.querySelector("button[type='submit']");
+        btn.disabled = false;
+        btn.textContent = "Submit Application";
+        alert("Something went wrong. Please try again.");
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+</html>

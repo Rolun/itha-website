@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Velldenar Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background-image: url('Background.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: #d4c9b0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 7, 14, 0.78);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 60px 24px;
+      max-width: 700px;
+    }
+
+    .eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #c9a84c;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 3.2rem;
+      font-weight: 700;
+      color: #e8d5a3;
+      letter-spacing: 0.05em;
+      line-height: 1.2;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.8);
+      margin-bottom: 12px;
+    }
+
+    .gold-line {
+      width: 60px;
+      height: 2px;
+      background: #c9a84c;
+      margin: 28px auto;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #9e9070;
+      line-height: 1.9;
+      font-weight: 300;
+    }
+
+    @media (max-width: 520px) {
+      h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div class="eyebrow">A Storytelling Universe</div>
+    <h1>The Velldenar Project</h1>
+    <div class="gold-line"></div>
+    <p>An original storytelling series brought to life through narrative, character, and voice. The world of Velldenar is being built — and the story is only beginning.</p>
+  </div>
+</body>
+</html>

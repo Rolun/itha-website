@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velldenar Project — Application Received</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background-image: url('Background.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: #d4c9b0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 7, 14, 0.78);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: #16151e;
+      border: 1px solid #2a2738;
+      border-radius: 10px;
+      padding: 60px 48px;
+      max-width: 560px;
+      width: 90%;
+      text-align: center;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: #e8d5a3;
+      margin-bottom: 20px;
+    }
+
+    .gold-line {
+      width: 60px;
+      height: 2px;
+      background: #c9a84c;
+      margin: 0 auto 24px;
+    }
+
+    p {
+      color: #9e9070;
+      font-size: 0.95rem;
+      line-height: 1.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Application Received</h1>
+    <div class="gold-line"></div>
+    <p>
+      Thank you for your interest in the Velldenar Project.<br><br>
+      We will carefully review your application and reach out via Discord if you are selected for a role.<br><br>
+      We appreciate your support of the project.
+    </p>
+  </div>
+</body>
+</html>
