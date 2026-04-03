@@ -512,11 +512,15 @@
         btn.disabled = true;
         btn.textContent = "Submitting...";
 
-        await fetch("/api/submit", {
+        const response = await fetch("/api/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
 
         window.location.href = "/thankyou.html";
       } catch (err) {
