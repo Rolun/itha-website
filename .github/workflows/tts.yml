@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths: ['stories/**/*.pdf']
+  workflow_dispatch:
 
 permissions:
   contents: write
