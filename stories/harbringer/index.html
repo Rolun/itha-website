@@ -661,14 +661,31 @@
       lastScrollY = sy;
     });
 
-    // ── Text-to-Speech ──
+    // ── Text-to-Speech (StreamElements / Amazon Polly) ──
+    const TTS_VOICE = 'Brian';
     let ttsReading = false;
     let ttsPaused = false;
+    let ttsAudio = null;
 
     function ttsGetTexts() {
       return [...document.querySelectorAll(
         '#story-content-inner .story-text p, #story-content-inner .chapter-pending p'
       )].map(p => p.textContent.trim()).filter(t => t);
+    }
+    function ttsChunks(texts, maxLen = 250) {
+      const out = [];
+      for (const text of texts) {
+        if (text.length <= maxLen) { out.push(text); continue; }
+        let rem = text;
+        while (rem.length > maxLen) {
+          let cut = rem.lastIndexOf(' ', maxLen);
+          if (cut < 0) cut = maxLen;
+          out.push(rem.slice(0, cut).trim());
+          rem = rem.slice(cut).trim();
+        }
+        if (rem) out.push(rem);
+      }
+      return out;
     }
     function ttsUpdateUI() {
       const btn = document.getElementById('tts-btn');
@@ -686,40 +703,41 @@
       stop.style.display = ttsReading ? 'inline-flex' : 'none';
     }
     function ttsStop() {
-      ttsReading = false;
-      ttsPaused = false;
-      speechSynthesis.cancel();
+      ttsReading = false; ttsPaused = false;
+      if (ttsAudio) { ttsAudio.pause(); ttsAudio.src = ''; ttsAudio = null; }
       ttsUpdateUI();
     }
     function ttsTogglePause() {
-      if (ttsPaused) { speechSynthesis.resume(); ttsPaused = false; }
-      else { speechSynthesis.pause(); ttsPaused = true; }
+      if (!ttsAudio) return;
+      if (ttsPaused) { ttsAudio.play().catch(() => {}); ttsPaused = false; }
+      else { ttsAudio.pause(); ttsPaused = true; }
       ttsUpdateUI();
-    }
-    function ttsGetBestVoice() {
-      const voices = speechSynthesis.getVoices();
-      return (
-        voices.find(v => /google/i.test(v.name) && v.lang.startsWith('en')) ||
-        voices.find(v => v.lang.startsWith('en') && !v.localService) ||
-        voices.find(v => v.lang.startsWith('en')) ||
-        null
-      );
     }
     function ttsStart() {
-      speechSynthesis.cancel();
-      const texts = ttsGetTexts();
-      if (!texts.length) return;
+      if (ttsAudio) { ttsAudio.pause(); ttsAudio = null; }
+      const chunks = ttsChunks(ttsGetTexts());
+      if (!chunks.length) return;
       ttsReading = true; ttsPaused = false;
       ttsUpdateUI();
-      const bestVoice = ttsGetBestVoice();
       let i = 0;
       function next() {
-        if (i >= texts.length || !ttsReading) { ttsReading = false; ttsUpdateUI(); return; }
-        const u = new SpeechSynthesisUtterance(texts[i++]);
-        if (bestVoice) u.voice = bestVoice;
-        u.onend = next;
-        u.onerror = () => { ttsReading = false; ttsUpdateUI(); };
-        speechSynthesis.speak(u);
+        if (!ttsReading || i >= chunks.length) { ttsReading = false; ttsUpdateUI(); return; }
+        const url = 'https://api.streamelements.com/kappa/v2/speech?voice=' + TTS_VOICE +
+                    '&text=' + encodeURIComponent(chunks[i++]);
+        ttsAudio = new Audio(url);
+        let handled = false;
+        function onFail() {
+          if (handled) return; handled = true;
+          ttsReading = false; ttsAudio = null;
+          const btn = document.getElementById('tts-btn');
+          btn.textContent = '\u26a0 Audio unavailable — check connection';
+          btn.classList.remove('reading');
+          document.getElementById('tts-stop-btn').style.display = 'none';
+          setTimeout(() => { if (!ttsReading) btn.textContent = '\u25b6 Read Aloud'; }, 4000);
+        }
+        ttsAudio.onended = next;
+        ttsAudio.onerror = onFail;
+        ttsAudio.play().catch(onFail);
       }
       next();
     }
