@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memories of Velldenar — The Velldenar Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background-image: url('../../assets/Background.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: #d4c9b0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 7, 14, 0.85);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .sidebar {
+      position: relative;
+      z-index: 2;
+      width: 260px;
+      flex-shrink: 0;
+      background: rgba(10, 9, 16, 0.75);
+      border-right: 1px solid #2a2738;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid #2a2738;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #6b5f3f;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      margin-bottom: 18px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #c9a84c; }
+    .back-link::before { content: '←'; }
+
+    .sidebar-book-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e8d5a3;
+      line-height: 1.5;
+      letter-spacing: 0.04em;
+    }
+
+    .sidebar-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #c9a84c;
+      padding: 18px 20px 10px;
+    }
+
+    .chapter-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 12px 20px;
+    }
+    .chapter-list::-webkit-scrollbar { width: 4px; }
+    .chapter-list::-webkit-scrollbar-track { background: transparent; }
+    .chapter-list::-webkit-scrollbar-thumb { background: #2a2738; border-radius: 2px; }
+
+    .chapter-item {
+      display: block;
+      padding: 11px 12px;
+      border-radius: 6px;
+      font-size: 0.83rem;
+      color: #7a7060;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Raleway', sans-serif;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+    .chapter-item:hover { background: rgba(201,168,76,0.07); color: #b8a882; }
+    .chapter-item.active { background: rgba(201,168,76,0.12); color: #c9a84c; font-weight: 500; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #1e1c28;
+      font-size: 0.68rem;
+      color: #3a342a;
+      line-height: 1.6;
+    }
+
+    .main {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid #2a2738;
+      background: rgba(10, 9, 16, 0.6);
+      flex-shrink: 0;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .chapter-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      color: #e8d5a3;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .header-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    .view-toggle { display: flex; border: 1px solid #2a2738; border-radius: 6px; overflow: hidden; }
+    .toggle-btn {
+      padding: 7px 14px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: #6b5f3f;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .toggle-btn:hover { color: #b8a882; background: rgba(255,255,255,0.04); }
+    .toggle-btn.active { background: rgba(201,168,76,0.15); color: #c9a84c; }
+    .toggle-btn + .toggle-btn { border-left: 1px solid #2a2738; }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid #3a3222;
+      border-radius: 6px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #c9a84c;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .download-btn:hover { background: rgba(201,168,76,0.22); border-color: #c9a84c; }
+    .download-btn::before { content: '↓'; font-size: 0.9em; }
+
+    .reader-area { flex: 1; overflow: hidden; position: relative; }
+
+    #pdf-view { width: 100%; height: 100%; border: none; display: block; background: #1a1924; }
+
+    #story-view {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      padding: 48px 60px 80px;
+      background: #0e0e12;
+    }
+    #story-view::-webkit-scrollbar { width: 6px; }
+    #story-view::-webkit-scrollbar-track { background: transparent; }
+    #story-view::-webkit-scrollbar-thumb { background: #2a2738; border-radius: 3px; }
+
+    .story-content { max-width: 660px; margin: 0 auto; }
+
+    .story-chapter-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e8d5a3;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .story-chapter-num {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #c9a84c;
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .story-divider { width: 40px; height: 1px; background: #3a3222; margin: 0 auto 36px; }
+
+    .story-text p { font-size: 1rem; line-height: 2; color: #b8a882; font-weight: 300; margin-bottom: 1.4em; }
+    .story-text p.drop-cap::first-letter {
+      font-family: 'Cinzel', serif;
+      font-size: 3.4em;
+      font-weight: 700;
+      color: #c9a84c;
+      float: left;
+      line-height: 0.75;
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+    .chapter-pending {
+      text-align: center;
+      padding: 80px 20px 40px;
+    }
+    .chapter-pending p {
+      font-family: 'Cinzel', serif;
+      font-size: 1.35rem;
+      color: #8a7550;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+    .chapter-pending-sub {
+      font-family: 'Raleway', sans-serif !important;
+      font-size: 0.88rem !important;
+      font-weight: 300;
+      color: #4a4438 !important;
+      letter-spacing: 0.04em !important;
+      line-height: 2;
+    }
+    .chapter-pending-rune {
+      font-size: 1.4rem;
+      color: #3a3222;
+      letter-spacing: 0.5em;
+      margin-top: 36px;
+      display: block;
+    }
+
+    .story-footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid #1e1c28;
+      text-align: center;
+      font-size: 0.73rem;
+      color: #3a342a;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { width: 220px; }
+      #story-view { padding: 32px 24px 60px; }
+      .main-header { padding: 14px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="back-link" href="../../index.html">Back to Home</a>
+      <div class="sidebar-book-title">Memories<br>of Velldenar</div>
+    </div>
+
+    <div class="sidebar-label">Chapters</div>
+
+    <div class="chapter-list">
+      <button class="chapter-item active" data-chapter="1" data-title="Chapter I: What Remains">
+        Chapter I: What Remains
+      </button>
+      <button class="chapter-item" data-chapter="2" data-title="Chapter II: The Memory Keepers">
+        Chapter II: The Memory Keepers
+      </button>
+      <button class="chapter-item" data-chapter="3" data-title="Chapter III: A Mind Full of Borrowed Grief">
+        Chapter III: A Mind Full of Borrowed Grief
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      &copy; 2026 The Velldenar Project<br>
+      All stories are protected under copyright.<br>
+      All rights reserved.
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="main-header">
+      <span class="chapter-title" id="chapter-title-display">Chapter I: What Remains</span>
+      <div class="header-controls">
+        <div class="view-toggle">
+          <button class="toggle-btn active" id="btn-story" onclick="setView('story')">Story View</button>
+          <button class="toggle-btn" id="btn-pdf" onclick="setView('pdf')">PDF Reader</button>
+        </div>
+        <a class="download-btn" id="download-link" href="chapter1.pdf" download>Download PDF</a>
+      </div>
+    </div>
+
+    <div class="reader-area">
+      <iframe id="pdf-view" src="chapter1.pdf" title="Chapter PDF"></iframe>
+      <div id="story-view">
+        <div class="story-content" id="story-content-inner"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chapterData = {
+      1: { title: "Chapter I: What Remains",                   num: "Memories of Velldenar", comingSoon: true },
+      2: { title: "Chapter II: The Memory Keepers",            num: "Memories of Velldenar", comingSoon: true },
+      3: { title: "Chapter III: A Mind Full of Borrowed Grief", num: "Memories of Velldenar", comingSoon: true }
+    };
+
+    let currentView = 'pdf';
+    let currentChapter = 1;
+
+    function setView(view) {
+      currentView = view;
+      document.getElementById('pdf-view').style.display = view === 'pdf' ? 'block' : 'none';
+      document.getElementById('story-view').style.display = view === 'story' ? 'block' : 'none';
+      document.getElementById('btn-pdf').classList.toggle('active', view === 'pdf');
+      document.getElementById('btn-story').classList.toggle('active', view === 'story');
+    }
+
+    function loadChapter(num) {
+      currentChapter = num;
+      const data = chapterData[num];
+
+      document.getElementById('chapter-title-display').textContent = data.title;
+      document.getElementById('download-link').href = `chapter${num}.pdf`;
+      document.getElementById('download-link').download = `Memories-of-Velldenar-${data.title}.pdf`;
+      document.getElementById('pdf-view').src = `chapter${num}.pdf`;
+      document.getElementById('story-view').scrollTop = 0;
+      document.querySelectorAll('.chapter-item').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.chapter) === num);
+      });
+
+      const footer = `<div class="story-footer">&copy; 2026 The Velldenar Project — All rights reserved.<br>This story is protected under copyright. Unauthorized reproduction is prohibited.</div>`;
+      const header = `<div class="story-chapter-num">${data.num}</div><div class="story-chapter-title">${data.title}</div><div class="story-divider"></div>`;
+
+      document.getElementById('story-content-inner').innerHTML = header + `
+        <div class="chapter-pending">
+          <p>This chapter is yet to come.</p>
+          <p class="chapter-pending-sub">The story continues beyond this page.<br>Return when the next chapter is ready.</p>
+          <span class="chapter-pending-rune">✦ ✦ ✦</span>
+        </div>
+      ` + footer;
+    }
+
+    document.querySelectorAll('.chapter-item').forEach(btn => {
+      btn.addEventListener('click', () => loadChapter(parseInt(btn.dataset.chapter)));
+    });
+
+    loadChapter(1);
+    setView('story');
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harbringer of Velldenar — The Velldenar Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      background-image: url('../../assets/Background.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      color: #d4c9b0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 7, 14, 0.85);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .sidebar {
+      position: relative;
+      z-index: 2;
+      width: 260px;
+      flex-shrink: 0;
+      background: rgba(10, 9, 16, 0.75);
+      border-right: 1px solid #2a2738;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid #2a2738;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #6b5f3f;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      margin-bottom: 18px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #c9a84c; }
+    .back-link::before { content: '←'; }
+
+    .sidebar-book-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e8d5a3;
+      line-height: 1.5;
+      letter-spacing: 0.04em;
+    }
+
+    .sidebar-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #c9a84c;
+      padding: 18px 20px 10px;
+    }
+
+    .chapter-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 12px 20px;
+    }
+    .chapter-list::-webkit-scrollbar { width: 4px; }
+    .chapter-list::-webkit-scrollbar-track { background: transparent; }
+    .chapter-list::-webkit-scrollbar-thumb { background: #2a2738; border-radius: 2px; }
+
+    .chapter-item {
+      display: block;
+      padding: 11px 12px;
+      border-radius: 6px;
+      font-size: 0.83rem;
+      color: #7a7060;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Raleway', sans-serif;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+    .chapter-item:hover { background: rgba(201,168,76,0.07); color: #b8a882; }
+    .chapter-item.active { background: rgba(201,168,76,0.12); color: #c9a84c; font-weight: 500; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #1e1c28;
+      font-size: 0.78rem;
+      color: #4a4438;
+      line-height: 1.7;
+    }
+
+    .main {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid #2a2738;
+      background: rgba(10, 9, 16, 0.6);
+      flex-shrink: 0;
+      gap: 16px;
+      flex-wrap: wrap;
+      transition: max-height 0.28s ease, padding 0.28s ease, opacity 0.2s ease, border-color 0.28s ease;
+      max-height: 120px;
+    }
+    .main-header.header-hidden {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
+      opacity: 0;
+      border-color: transparent;
+    }
+
+    .chapter-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      color: #e8d5a3;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .header-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    .view-toggle { display: flex; border: 1px solid #2a2738; border-radius: 6px; overflow: hidden; }
+    .toggle-btn {
+      padding: 7px 14px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: #6b5f3f;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .toggle-btn:hover { color: #b8a882; background: rgba(255,255,255,0.04); }
+    .toggle-btn.active { background: rgba(201,168,76,0.15); color: #c9a84c; }
+    .toggle-btn + .toggle-btn { border-left: 1px solid #2a2738; }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid #3a3222;
+      border-radius: 6px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #c9a84c;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .download-btn:hover { background: rgba(201,168,76,0.22); border-color: #c9a84c; }
+    .download-btn::before { content: '↓'; font-size: 0.9em; }
+
+    .reader-area { flex: 1; overflow: hidden; position: relative; }
+
+    /* ── Character art frames (fixed, like background) ── */
+    .art-frame {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 1;
+      display: none;
+      overflow: hidden;
+    }
+    .art-frame-left { left: 260px; right: calc(50% + 260px); }
+    .art-frame-right { right: 0; left: calc(50% + 520px); }
+    .art-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      opacity: 0.3;
+    }
+    @media (max-width: 1200px) { .art-frame { display: none !important; } }
+
+    #pdf-view { width: 100%; height: 100%; border: none; display: none; background: #1a1924; }
+
+    #story-view {
+      display: block;
+      height: 100%;
+      overflow-y: auto;
+      padding: 48px 60px 80px;
+      background: #0e0e12;
+    }
+    #story-view::-webkit-scrollbar { width: 6px; }
+    #story-view::-webkit-scrollbar-track { background: transparent; }
+    #story-view::-webkit-scrollbar-thumb { background: #2a2738; border-radius: 3px; }
+
+    .story-content { max-width: 660px; margin: 0 auto; }
+
+    .story-chapter-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e8d5a3;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .story-chapter-num {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #c9a84c;
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .story-divider { width: 40px; height: 1px; background: #3a3222; margin: 0 auto 36px; }
+
+    .story-text p { font-size: 1rem; line-height: 2; color: #b8a882; font-weight: 300; margin-bottom: 1.4em; }
+    .story-text p.drop-cap::first-letter {
+      font-family: 'Cinzel', serif;
+      font-size: 3.4em;
+      font-weight: 700;
+      color: #c9a84c;
+      float: left;
+      line-height: 0.75;
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+    .story-text .placeholder-note {
+      font-style: italic;
+      color: #4a4438;
+      font-size: 0.9rem;
+      border-left: 2px solid #2a2738;
+      padding-left: 14px;
+      margin-top: 32px;
+    }
+    .story-text .context-note {
+      font-style: italic;
+      color: #9a8870;
+      font-size: 0.95rem;
+      line-height: 1.9;
+      margin-bottom: 2em;
+      padding-left: 10px;
+      border-left: 2px solid #3a3222;
+    }
+
+    .chapter-pending {
+      text-align: center;
+      padding: 80px 20px 40px;
+    }
+    .chapter-pending p {
+      font-family: 'Cinzel', serif;
+      font-size: 1.35rem;
+      color: #8a7550;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+    .chapter-pending-sub {
+      font-family: 'Raleway', sans-serif !important;
+      font-size: 0.88rem !important;
+      font-weight: 300;
+      color: #4a4438 !important;
+      letter-spacing: 0.04em !important;
+      line-height: 2;
+    }
+    .chapter-pending-rune {
+      font-size: 1.4rem;
+      color: #3a3222;
+      letter-spacing: 0.5em;
+      margin-top: 36px;
+      display: block;
+    }
+
+    .story-footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid #1e1c28;
+      text-align: center;
+      font-size: 0.73rem;
+      color: #3a342a;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { width: 220px; }
+      #story-view { padding: 32px 24px 60px; }
+      .main-header { padding: 14px 18px; }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="back-link" href="../../index.html">Back to Home</a>
+      <div class="sidebar-book-title">Harbringer<br>of Velldenar</div>
+    </div>
+
+    <div class="sidebar-label">Chapters</div>
+
+    <div class="chapter-list">
+      <button class="chapter-item active" data-chapter="1" data-title="Chapter 1 - The Mirror In The Snow">
+        Chapter 1 — The Mirror In The Snow
+      </button>
+      <button class="chapter-item" data-chapter="2" data-title="Chapter 2 - The Weeping Forest">
+        Chapter 2 — The Weeping Forest
+      </button>
+      <button class="chapter-item" data-chapter="3" data-title="Chapter 3 - When Terror Meets Sorrow">
+        Chapter 3 — When Terror Meets Sorrow
+      </button>
+      <button class="chapter-item" data-chapter="4" data-title="Chapter 4 - Where Gold Turns To Ash">
+        Chapter 4 — Where Gold Turns To Ash
+      </button>
+      <button class="chapter-item" data-chapter="5" data-title="Chapter 5 - The Rise Of The Harbinger">
+        Chapter 5 — The Rise Of The Harbinger
+      </button>
+      <button class="chapter-item" data-chapter="6" data-title="Chapter 6 - Shadows Of The Past">
+        Chapter 6 — Shadows Of The Past
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      &copy; 2026 The Velldenar Project<br>
+      All stories are protected under copyright.<br>
+      All rights reserved.
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="main-header">
+      <span class="chapter-title" id="chapter-title-display">Chapter 1 — The Mirror In The Snow</span>
+      <div class="header-controls">
+        <div class="view-toggle">
+          <button class="toggle-btn active" id="btn-story" onclick="setView('story')">Story View</button>
+          <button class="toggle-btn" id="btn-pdf" onclick="setView('pdf')">PDF Reader</button>
+        </div>
+        <a class="download-btn" id="download-link" href="chapter1.pdf" download>Download PDF</a>
+      </div>
+    </div>
+
+    <div class="art-frame art-frame-left" id="art-frame-left">
+      <img id="art-img-left" src="" alt="Chapter art">
+    </div>
+    <div class="art-frame art-frame-right" id="art-frame-right">
+      <img id="art-img-right" src="" alt="Chapter art">
+    </div>
+
+    <div class="reader-area">
+      <embed id="pdf-view" src="chapter1.pdf" type="application/pdf" style="width:100%;height:100%;border:none;display:none;background:#1a1924">
+      <div id="story-view">
+        <div class="story-content" id="story-content-inner"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const chapterData = {
+      1: { title: "Chapter 1 — The Mirror In The Snow",    num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png" },
+      2: { title: "Chapter 2 — The Weeping Forest",         num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
+      3: { title: "Chapter 3 — When Terror Meets Sorrow",   num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
+      4: { title: "Chapter 4 — Where Gold Turns To Ash",    num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
+      5: { title: "Chapter 5 — The Rise Of The Harbinger",  num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
+      6: { title: "Chapter 6 — Shadows Of The Past",        num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true }
+    };
+
+    const pdfTextCache = {};
+
+    async function extractPdfParagraphs(url) {
+      if (pdfTextCache[url]) return pdfTextCache[url];
+
+      const pdf = await pdfjsLib.getDocument(url).promise;
+      const rawLines = [];
+      const fontFreq = {};
+
+      // Pass 1: collect all lines and track font usage by character count
+      for (let pn = 1; pn <= pdf.numPages; pn++) {
+        const page = await pdf.getPage(pn);
+        const tc = await page.getTextContent();
+
+        const lineGroups = [];
+        for (const item of tc.items) {
+          if (!item.str.trim()) continue;
+          const y = item.transform[5];
+          let group = lineGroups.find(g => Math.abs(g.y - y) < 3);
+          if (!group) { group = { y, items: [] }; lineGroups.push(group); }
+          group.items.push(item);
+          fontFreq[item.fontName] = (fontFreq[item.fontName] || 0) + item.str.length;
+        }
+
+        lineGroups.sort((a, b) => b.y - a.y);
+        for (const g of lineGroups) {
+          const items = g.items.sort((a, b) => a.transform[4] - b.transform[4]);
+          const txt = items.map(i => i.str).join('');
+          if (!txt.trim()) continue;
+          const fonts = [...new Set(items.map(i => i.fontName))];
+          rawLines.push({ y: g.y, txt, fonts, pn });
+        }
+        rawLines.push({ pageBreak: true });
+      }
+
+      // Most-used font by character count = body (non-italic) font
+      const bodyFont = Object.entries(fontFreq).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+      // Pass 2: build paragraphs; lines using only non-body fonts = italic
+      const paragraphs = [];
+      let cur = '';
+      let curItalic = false;
+      let prevY = null;
+
+      for (const line of rawLines) {
+        if (line.pageBreak) {
+          if (cur.trim()) { paragraphs.push({ text: cur.trim(), italic: curItalic }); cur = ''; }
+          prevY = null;
+          continue;
+        }
+
+        const cleaned = line.txt.trim();
+        if (/^\d+$/.test(cleaned)) continue;                                                              // page numbers
+        if (cleaned.includes('©')) continue;                                                              // copyright watermarks
+        if (cleaned === cleaned.toUpperCase() && /[A-Z]/.test(cleaned) && cleaned.length < 120) continue; // all-caps headers
+
+        const lineItalic = bodyFont ? line.fonts.every(f => f !== bodyFont) : false;
+
+        if (prevY !== null) {
+          const gap = prevY - line.y;
+          if (gap > 34) {
+            if (cur.trim()) { paragraphs.push({ text: cur.trim(), italic: curItalic }); cur = ''; }
+            curItalic = lineItalic;
+          } else {
+            if (cur.endsWith('-')) { cur = cur.slice(0, -1); } else { cur += ' '; }
+          }
+        } else {
+          curItalic = lineItalic;
+        }
+
+        cur += line.txt;
+        if (lineItalic) curItalic = true;
+        prevY = line.y;
+      }
+      if (cur.trim()) paragraphs.push({ text: cur.trim(), italic: curItalic });
+
+      pdfTextCache[url] = paragraphs;
+      return paragraphs;
+    }
+
+    let currentView = 'story';
+    let currentChapter = 1;
+
+    function setView(view) {
+      currentView = view;
+      document.getElementById('pdf-view').style.display = view === 'pdf' ? 'block' : 'none';
+      document.getElementById('story-view').style.display = view === 'story' ? 'block' : 'none';
+      document.getElementById('btn-pdf').classList.toggle('active', view === 'pdf');
+      document.getElementById('btn-story').classList.toggle('active', view === 'story');
+      const showArt = view === 'story';
+      document.getElementById('art-frame-left').style.display = showArt ? 'flex' : 'none';
+      document.getElementById('art-frame-right').style.display = showArt ? 'flex' : 'none';
+      if (view === 'pdf') document.querySelector('.main-header').classList.remove('header-hidden');
+    }
+
+    async function loadChapter(num) {
+      currentChapter = num;
+      const data = chapterData[num];
+      document.getElementById('chapter-title-display').textContent = data.title;
+      document.getElementById('download-link').href = `chapter${num}.pdf`;
+      document.getElementById('download-link').download = `Harbringer-of-Velldenar-${data.title}.pdf`;
+      document.getElementById('pdf-view').src = `chapter${num}.pdf`;
+      document.getElementById('art-img-left').src = data.artLeft || '';
+      document.getElementById('art-img-right').src = data.artRight || '';
+      document.querySelectorAll('.chapter-item').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.chapter) === num);
+      });
+
+      const container = document.getElementById('story-content-inner');
+      const header = `
+        <div class="story-chapter-num">${data.num}</div>
+        <div class="story-chapter-title">${data.title}</div>
+        <div class="story-divider"></div>
+      `;
+      const footer = `
+        <div class="story-footer">
+          &copy; 2026 The Velldenar Project — All rights reserved.<br>
+          This story is protected under copyright. Unauthorized reproduction is prohibited.
+        </div>
+      `;
+
+      document.getElementById('story-view').scrollTop = 0;
+
+      if (data.comingSoon) {
+        container.innerHTML = header + `
+          <div class="chapter-pending">
+            <p>This chapter is yet to come.</p>
+            <p class="chapter-pending-sub">
+              The story continues beyond this page.<br>
+              Return when the next chapter is ready.
+            </p>
+            <span class="chapter-pending-rune">✦ ✦ ✦</span>
+          </div>
+        ` + footer;
+        return;
+      }
+
+      container.innerHTML = header +
+        '<div class="story-text"><p style="color:#4a4438;font-style:italic;font-size:0.9rem;">Loading chapter text…</p></div>';
+
+      try {
+        const paragraphs = await extractPdfParagraphs(`chapter${num}.pdf`);
+        let textHtml = '<div class="story-text">';
+        let firstBody = true;
+        paragraphs.forEach(para => {
+          if (para.italic) {
+            textHtml += `<p class="context-note">${para.text}</p>`;
+          } else {
+            textHtml += `<p${firstBody ? ' class="drop-cap"' : ''}>${para.text}</p>`;
+            firstBody = false;
+          }
+        });
+        textHtml += '</div>';
+        container.innerHTML = header + textHtml + footer;
+      } catch (e) {
+        container.innerHTML = header +
+          '<div class="story-text"><p class="placeholder-note">Chapter text coming soon.</p></div>' + footer;
+      }
+    }
+
+    document.querySelectorAll('.chapter-item').forEach(btn => {
+      btn.addEventListener('click', () => loadChapter(parseInt(btn.dataset.chapter)));
+    });
+
+    // Auto-hide header on scroll in Story View
+    const headerEl = document.querySelector('.main-header');
+    let lastScrollY = 0;
+    document.getElementById('story-view').addEventListener('scroll', () => {
+      if (currentView !== 'story') return;
+      const sy = document.getElementById('story-view').scrollTop;
+      if (sy > 80 && sy > lastScrollY) {
+        headerEl.classList.add('header-hidden');
+      } else if (sy < lastScrollY || sy < 80) {
+        headerEl.classList.remove('header-hidden');
+      }
+      lastScrollY = sy;
+    });
+
+    loadChapter(1);
+    setView('story');
+  </script>
+
+</body>
+</html>
