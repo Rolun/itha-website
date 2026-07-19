@@ -456,7 +456,7 @@
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     const chapterData = {
-      1: { title: "Chapter 1 — The Mirror In The Snow",    num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png" },
+      1: { title: "Chapter 1 — The Mirror In The Snow",    num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", audioSrc: "chapter1_audio.mp3" },
       2: { title: "Chapter 2 — The Weeping Forest",         num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
       3: { title: "Chapter 3 — When Terror Meets Sorrow",   num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
       4: { title: "Chapter 4 — Where Gold Turns To Ash",    num: "Harbringer of Velldenar", artLeft: "../../assets/harbringer_chapter1_left_side.png",  artRight: "../../assets/harbringer_chapter1_right_side.png", comingSoon: true },
@@ -557,7 +557,7 @@
       document.getElementById('art-frame-left').style.display = showArt ? 'flex' : 'none';
       document.getElementById('art-frame-right').style.display = showArt ? 'flex' : 'none';
       if (view === 'pdf') document.querySelector('.main-header').classList.remove('header-hidden');
-      document.getElementById('tts-controls').style.display = view === 'story' ? 'flex' : 'none';
+      document.getElementById('tts-controls').style.display = (view === 'story' && ttsAudio) ? 'flex' : 'none';
       if (view === 'pdf') ttsStop();
     }
 
@@ -565,6 +565,7 @@
       ttsStop();
       currentChapter = num;
       const data = chapterData[num];
+      ttsLoad(data.audioSrc || null);
       document.getElementById('chapter-title-display').textContent = data.title;
       document.getElementById('download-link').href = `chapter${num}.pdf`;
       document.getElementById('download-link').download = `Harbringer-of-Velldenar-${data.title}.pdf`;
@@ -661,31 +662,20 @@
       lastScrollY = sy;
     });
 
-    // ── Text-to-Speech (StreamElements / Amazon Polly) ──
-    const TTS_VOICE = 'Brian';
+    // ── Text-to-Speech (pre-generated audio per chapter) ──
     let ttsReading = false;
     let ttsPaused = false;
     let ttsAudio = null;
 
-    function ttsGetTexts() {
-      return [...document.querySelectorAll(
-        '#story-content-inner .story-text p, #story-content-inner .chapter-pending p'
-      )].map(p => p.textContent.trim()).filter(t => t);
-    }
-    function ttsChunks(texts, maxLen = 250) {
-      const out = [];
-      for (const text of texts) {
-        if (text.length <= maxLen) { out.push(text); continue; }
-        let rem = text;
-        while (rem.length > maxLen) {
-          let cut = rem.lastIndexOf(' ', maxLen);
-          if (cut < 0) cut = maxLen;
-          out.push(rem.slice(0, cut).trim());
-          rem = rem.slice(cut).trim();
-        }
-        if (rem) out.push(rem);
-      }
-      return out;
+    function ttsLoad(src) {
+      if (ttsAudio) { ttsAudio.pause(); ttsAudio = null; }
+      ttsReading = false; ttsPaused = false;
+      ttsUpdateUI();
+      document.getElementById('tts-controls').style.display = 'none';
+      if (!src) return;
+      ttsAudio = new Audio(src);
+      ttsAudio.onended = () => { ttsReading = false; ttsUpdateUI(); };
+      if (currentView === 'story') document.getElementById('tts-controls').style.display = 'flex';
     }
     function ttsUpdateUI() {
       const btn = document.getElementById('tts-btn');
@@ -703,8 +693,8 @@
       stop.style.display = ttsReading ? 'inline-flex' : 'none';
     }
     function ttsStop() {
+      if (ttsAudio) { ttsAudio.pause(); ttsAudio.currentTime = 0; }
       ttsReading = false; ttsPaused = false;
-      if (ttsAudio) { ttsAudio.pause(); ttsAudio.src = ''; ttsAudio = null; }
       ttsUpdateUI();
     }
     function ttsTogglePause() {
@@ -714,32 +704,11 @@
       ttsUpdateUI();
     }
     function ttsStart() {
-      if (ttsAudio) { ttsAudio.pause(); ttsAudio = null; }
-      const chunks = ttsChunks(ttsGetTexts());
-      if (!chunks.length) return;
+      if (!ttsAudio) return;
+      ttsAudio.currentTime = 0;
       ttsReading = true; ttsPaused = false;
       ttsUpdateUI();
-      let i = 0;
-      function next() {
-        if (!ttsReading || i >= chunks.length) { ttsReading = false; ttsUpdateUI(); return; }
-        const url = 'https://api.streamelements.com/kappa/v2/speech?voice=' + TTS_VOICE +
-                    '&text=' + encodeURIComponent(chunks[i++]);
-        ttsAudio = new Audio(url);
-        let handled = false;
-        function onFail() {
-          if (handled) return; handled = true;
-          ttsReading = false; ttsAudio = null;
-          const btn = document.getElementById('tts-btn');
-          btn.textContent = '\u26a0 Audio unavailable — check connection';
-          btn.classList.remove('reading');
-          document.getElementById('tts-stop-btn').style.display = 'none';
-          setTimeout(() => { if (!ttsReading) btn.textContent = '\u25b6 Read Aloud'; }, 4000);
-        }
-        ttsAudio.onended = next;
-        ttsAudio.onerror = onFail;
-        ttsAudio.play().catch(onFail);
-      }
-      next();
+      ttsAudio.play().catch(() => { ttsReading = false; ttsUpdateUI(); });
     }
     document.getElementById('tts-btn').addEventListener('click', () => {
       if (!ttsReading) ttsStart(); else ttsTogglePause();

@@ -452,7 +452,7 @@
       document.getElementById('story-view').style.display = view === 'story' ? 'block' : 'none';
       document.getElementById('btn-pdf').classList.toggle('active', view === 'pdf');
       document.getElementById('btn-story').classList.toggle('active', view === 'story');
-      document.getElementById('tts-controls').style.display = view === 'story' ? 'flex' : 'none';
+      document.getElementById('tts-controls').style.display = 'none';
       if (view === 'pdf') ttsStop();
     }
 
