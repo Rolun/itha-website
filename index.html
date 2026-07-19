@@ -276,13 +276,13 @@
   <script>
     document.querySelectorAll('.book-card').forEach(card => {
       const video = card.querySelector('.book-video');
-      card.addEventListener('mouseenter', () => {
+      if (!video) return;
+      if ('ontouchstart' in window) {
         video.play().catch(() => {});
-      });
-      card.addEventListener('mouseleave', () => {
-        video.pause();
-        video.currentTime = 0;
-      });
+      } else {
+        card.addEventListener('mouseenter', () => video.play().catch(() => {}));
+        card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+      }
     });
   </script>
 
