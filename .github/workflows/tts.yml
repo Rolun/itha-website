@@ -99,6 +99,8 @@ jobs:
                   tmp = pdf_path + '.tmp.txt'
                   with open(tmp, 'w', encoding='utf-8') as f:
                       f.write(full_text)
+                  with open(pdf_path + '.extracted.txt', 'w', encoding='utf-8') as f:
+                      f.write(full_text)
                   result = subprocess.run(
                       ['edge-tts', '--voice', 'en-US-GuyNeural',
                        '--file', tmp, '--write-media', audio_path],
@@ -112,6 +114,13 @@ jobs:
               except Exception as e:
                   print(f'  Error: {e}')
           PYEOF
+
+      - name: Upload extracted text for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: extracted-text
+          path: stories/**/*.extracted.txt
+          if-no-files-found: ignore
 
       - name: Commit audio files
         run: |
