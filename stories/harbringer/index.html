@@ -364,6 +364,7 @@
       .sidebar {
         position: fixed;
         top: 0; left: 0; bottom: 0;
+        height: auto;
         z-index: 10;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -650,6 +651,7 @@
     let lastScrollY = 0;
     document.getElementById('story-view').addEventListener('scroll', () => {
       if (currentView !== 'story') return;
+      if (window.innerWidth <= 768) return;
       const sy = document.getElementById('story-view').scrollTop;
       if (sy > 80 && sy > lastScrollY) {
         headerEl.classList.add('header-hidden');
@@ -694,16 +696,27 @@
       else { speechSynthesis.pause(); ttsPaused = true; }
       ttsUpdateUI();
     }
+    function ttsGetBestVoice() {
+      const voices = speechSynthesis.getVoices();
+      return (
+        voices.find(v => /google/i.test(v.name) && v.lang.startsWith('en')) ||
+        voices.find(v => v.lang.startsWith('en') && !v.localService) ||
+        voices.find(v => v.lang.startsWith('en')) ||
+        null
+      );
+    }
     function ttsStart() {
       speechSynthesis.cancel();
       const texts = ttsGetTexts();
       if (!texts.length) return;
       ttsReading = true; ttsPaused = false;
       ttsUpdateUI();
+      const bestVoice = ttsGetBestVoice();
       let i = 0;
       function next() {
         if (i >= texts.length || !ttsReading) { ttsReading = false; ttsUpdateUI(); return; }
         const u = new SpeechSynthesisUtterance(texts[i++]);
+        if (bestVoice) u.voice = bestVoice;
         u.onend = next;
         u.onerror = () => { ttsReading = false; ttsUpdateUI(); };
         speechSynthesis.speak(u);
