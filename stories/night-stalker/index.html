@@ -304,6 +304,25 @@
       display: block;
     }
 
+    .tts-controls { display: flex; gap: 6px; align-items: center; }
+    .tts-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border: 1px solid #2a2738;
+      border-radius: 6px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #7a7060;
+      background: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .tts-btn:hover { color: #b8a882; border-color: #3a3530; }
+    .tts-btn.reading { color: #c9a84c; background: rgba(201,168,76,0.1); border-color: #3a3222; }
+
     .story-footer {
       margin-top: 60px;
       padding-top: 24px;
@@ -397,6 +416,10 @@
           <button class="toggle-btn active" id="btn-story" onclick="setView('story')">Story View</button>
           <button class="toggle-btn" id="btn-pdf" onclick="setView('pdf')">PDF Reader</button>
         </div>
+        <div class="tts-controls" id="tts-controls">
+          <button class="tts-btn" id="tts-btn">&#9654; Read Aloud</button>
+          <button class="tts-btn" id="tts-stop-btn" style="display:none">&#9632; Stop</button>
+        </div>
         <a class="download-btn" id="download-link" href="chapter1.pdf" download>Download PDF</a>
       </div>
     </div>
@@ -428,9 +451,12 @@
       document.getElementById('story-view').style.display = view === 'story' ? 'block' : 'none';
       document.getElementById('btn-pdf').classList.toggle('active', view === 'pdf');
       document.getElementById('btn-story').classList.toggle('active', view === 'story');
+      document.getElementById('tts-controls').style.display = view === 'story' ? 'flex' : 'none';
+      if (view === 'pdf') ttsStop();
     }
 
     function loadChapter(num) {
+      ttsStop();
       currentChapter = num;
       const data = chapterData[num];
 
@@ -473,6 +499,62 @@
         loadChapter(parseInt(btn.dataset.chapter));
       });
     });
+
+    // ── Text-to-Speech ──
+    let ttsReading = false;
+    let ttsPaused = false;
+
+    function ttsGetTexts() {
+      return [...document.querySelectorAll(
+        '#story-content-inner .story-text p, #story-content-inner .chapter-pending p'
+      )].map(p => p.textContent.trim()).filter(t => t);
+    }
+    function ttsUpdateUI() {
+      const btn = document.getElementById('tts-btn');
+      const stop = document.getElementById('tts-stop-btn');
+      if (!ttsReading) {
+        btn.textContent = '\u25b6 Read Aloud';
+        btn.classList.remove('reading');
+      } else if (ttsPaused) {
+        btn.textContent = '\u25b6 Resume';
+        btn.classList.add('reading');
+      } else {
+        btn.textContent = '\u23f8 Pause';
+        btn.classList.add('reading');
+      }
+      stop.style.display = ttsReading ? 'inline-flex' : 'none';
+    }
+    function ttsStop() {
+      ttsReading = false;
+      ttsPaused = false;
+      speechSynthesis.cancel();
+      ttsUpdateUI();
+    }
+    function ttsTogglePause() {
+      if (ttsPaused) { speechSynthesis.resume(); ttsPaused = false; }
+      else { speechSynthesis.pause(); ttsPaused = true; }
+      ttsUpdateUI();
+    }
+    function ttsStart() {
+      speechSynthesis.cancel();
+      const texts = ttsGetTexts();
+      if (!texts.length) return;
+      ttsReading = true; ttsPaused = false;
+      ttsUpdateUI();
+      let i = 0;
+      function next() {
+        if (i >= texts.length || !ttsReading) { ttsReading = false; ttsUpdateUI(); return; }
+        const u = new SpeechSynthesisUtterance(texts[i++]);
+        u.onend = next;
+        u.onerror = () => { ttsReading = false; ttsUpdateUI(); };
+        speechSynthesis.speak(u);
+      }
+      next();
+    }
+    document.getElementById('tts-btn').addEventListener('click', () => {
+      if (!ttsReading) ttsStart(); else ttsTogglePause();
+    });
+    document.getElementById('tts-stop-btn').addEventListener('click', ttsStop);
 
     loadChapter(1);
     setView('story');
