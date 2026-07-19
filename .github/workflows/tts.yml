@@ -1,0 +1,125 @@
+name: Generate TTS audio
+
+on:
+  push:
+    branches: [main]
+    paths: ['stories/**/*.pdf']
+
+permissions:
+  contents: write
+
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pdfplumber edge-tts
+
+      - name: Extract text from PDFs and generate audio
+        run: |
+          python3 << 'PYEOF'
+          import glob, os, re, subprocess
+          import pdfplumber
+
+          def extract_text(pdf_path):
+              font_freq = {}
+              raw_lines = []
+
+              with pdfplumber.open(pdf_path) as pdf:
+                  for page in pdf.pages:
+                      line_groups = {}
+                      for ch in page.chars:
+                          if not ch['text'].strip():
+                              continue
+                          y = ch['top']
+                          matched = next((ey for ey in line_groups if abs(ey - y) < 3), None)
+                          if matched is None:
+                              matched = y
+                              line_groups[matched] = []
+                          line_groups[matched].append(ch)
+                          font = ch.get('fontname', '')
+                          font_freq[font] = font_freq.get(font, 0) + len(ch['text'])
+                      for y in sorted(line_groups):
+                          chars_in_line = sorted(line_groups[y], key=lambda c: c['x0'])
+                          text = ''.join(c['text'] for c in chars_in_line)
+                          raw_lines.append({'y': y, 'text': text})
+                      raw_lines.append({'page_break': True})
+
+              paragraphs = []
+              cur = ''
+              prev_y = None
+
+              for line in raw_lines:
+                  if line.get('page_break'):
+                      if cur.strip():
+                          paragraphs.append(cur.strip())
+                      cur = ''
+                      prev_y = None
+                      continue
+                  text = line['text'].strip()
+                  if not text:
+                      continue
+                  if re.fullmatch(r'\d+', text):          # page numbers
+                      continue
+                  if '\u00a9' in text or '\u00a9'.encode() in text.encode():
+                      continue                            # copyright watermarks
+                  if text == text.upper() and re.search(r'[A-Z]', text) and len(text) < 120:
+                      continue                            # all-caps headers
+                  if prev_y is not None:
+                      gap = line['y'] - prev_y
+                      if gap > 34:
+                          if cur.strip():
+                              paragraphs.append(cur.strip())
+                          cur = ''
+                      else:
+                          cur = cur[:-1] if cur.endswith('-') else cur + ' '
+                  cur += text
+                  prev_y = line['y']
+
+              if cur.strip():
+                  paragraphs.append(cur.strip())
+              return paragraphs
+
+          for pdf_path in sorted(glob.glob('stories/**/*.pdf', recursive=True)):
+              audio_path = os.path.splitext(pdf_path)[0] + '_audio.mp3'
+              print(f'Processing {pdf_path}...')
+              try:
+                  paragraphs = extract_text(pdf_path)
+                  full_text = '\n\n'.join(paragraphs)
+                  if len(full_text) < 500:
+                      print(f'  Skipped: only {len(full_text)} chars extracted (placeholder PDF)')
+                      continue
+                  tmp = pdf_path + '.tmp.txt'
+                  with open(tmp, 'w', encoding='utf-8') as f:
+                      f.write(full_text)
+                  result = subprocess.run(
+                      ['edge-tts', '--voice', 'en-US-GuyNeural',
+                       '--file', tmp, '--write-media', audio_path],
+                      capture_output=True, text=True
+                  )
+                  os.remove(tmp)
+                  if result.returncode == 0:
+                      print(f'  Generated {audio_path}')
+                  else:
+                      print(f'  edge-tts failed: {result.stderr.strip()}')
+              except Exception as e:
+                  print(f'  Error: {e}')
+          PYEOF
+
+      - name: Commit audio files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stories/**/*_audio.mp3
+          if git diff --staged --quiet; then
+            echo "No audio files changed"
+          else
+            git commit -m "chore: regenerate TTS audio from PDF"
+            git push
+          fi
