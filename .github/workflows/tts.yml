@@ -28,41 +28,23 @@ jobs:
           import glob, os, re, subprocess
           import pdfplumber
 
-          def chars_to_text(chars):
-              if not chars:
-                  return ''
-              result = chars[0]['text']
-              for i in range(1, len(chars)):
-                  prev = chars[i - 1]
-                  curr = chars[i]
-                  gap = curr['x0'] - prev['x1']
-                  avg_width = (prev.get('width', 5) + curr.get('width', 5)) / 2
-                  if gap > avg_width * 0.25:
-                      result += ' '
-                  result += curr['text']
-              return result
-
           def extract_text(pdf_path):
-              font_freq = {}
               raw_lines = []
 
               with pdfplumber.open(pdf_path) as pdf:
                   for page in pdf.pages:
+                      words = page.extract_words(x_tolerance=3, y_tolerance=3)
                       line_groups = {}
-                      for ch in page.chars:
-                          if not ch['text'].strip():
-                              continue
-                          y = ch['top']
+                      for word in words:
+                          y = word['top']
                           matched = next((ey for ey in line_groups if abs(ey - y) < 3), None)
                           if matched is None:
                               matched = y
                               line_groups[matched] = []
-                          line_groups[matched].append(ch)
-                          font = ch.get('fontname', '')
-                          font_freq[font] = font_freq.get(font, 0) + len(ch['text'])
+                          line_groups[matched].append(word)
                       for y in sorted(line_groups):
-                          chars_in_line = sorted(line_groups[y], key=lambda c: c['x0'])
-                          text = chars_to_text(chars_in_line)
+                          words_in_line = sorted(line_groups[y], key=lambda w: w['x0'])
+                          text = ' '.join(w['text'] for w in words_in_line)
                           raw_lines.append({'y': y, 'text': text})
                       raw_lines.append({'page_break': True})
 
