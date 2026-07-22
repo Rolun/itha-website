@@ -341,6 +341,27 @@
     }
     .progress-segment.filled { background: rgba(201, 168, 76, 0.6); }
 
+    .page-counter {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      padding: 8px 18px;
+      background: rgba(10, 9, 16, 0.85);
+      border: 1px solid #2a2738;
+      border-radius: 20px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.05rem;
+      color: #6b5f3f;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      display: none;
+      z-index: 4;
+    }
+    @media (max-width: 768px) {
+      .page-counter { font-size: 0.9rem; }
+    }
+    .page-counter .current { color: #c9a84c; }
+
     .story-footer {
       margin-top: 60px;
       padding-top: 24px;
@@ -460,6 +481,8 @@
       <img id="art-img-right" src="" alt="Chapter art">
     </div>
 
+    <div class="page-counter" id="page-counter"><span class="current" id="page-current">1</span> / <span id="page-total">28</span></div>
+
     <div class="reader-area">
       <embed id="pdf-view" src="chapter1.pdf" type="application/pdf" style="width:100%;height:100%;border:none;display:none;background:#1a1924">
       <div id="story-view">
@@ -577,8 +600,9 @@
       document.getElementById('tts-controls').style.display = (view === 'story' && ttsAudio) ? 'flex' : 'none';
       if (view === 'pdf') ttsStop();
       const bar = document.getElementById('progress-bar');
-      if (view !== 'story') bar.classList.remove('visible');
-      else if (bar.children.length > 0) bar.classList.add('visible');
+      const counter = document.getElementById('page-counter');
+      if (view !== 'story') { bar.classList.remove('visible'); counter.style.display = 'none'; }
+      else if (bar.children.length > 0) { bar.classList.add('visible'); counter.style.display = 'block'; }
     }
 
     async function loadChapter(num) {
@@ -671,8 +695,10 @@
     // ── Progress bar ──
     function buildProgressBar(count) {
       const bar = document.getElementById('progress-bar');
+      const counter = document.getElementById('page-counter');
       bar.innerHTML = '';
       bar.classList.remove('visible');
+      counter.style.display = 'none';
       if (!count || currentView !== 'story') return;
       for (let i = 0; i < count; i++) {
         const seg = document.createElement('div');
@@ -680,6 +706,9 @@
         bar.appendChild(seg);
       }
       bar.classList.add('visible');
+      document.getElementById('page-total').textContent = count;
+      document.getElementById('page-current').textContent = '1';
+      counter.style.display = 'block';
     }
 
     function updateProgressBar() {
@@ -693,6 +722,7 @@
       const progress = max > 0 ? sv.scrollTop / max : 0;
       const filled = Math.min(total, Math.round(progress * total));
       segments.forEach((seg, i) => seg.classList.toggle('filled', i < filled));
+      document.getElementById('page-current').textContent = Math.max(1, filled || 1);
     }
 
     // Auto-hide header on scroll in Story View
