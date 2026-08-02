@@ -193,6 +193,27 @@
 
     .reader-area { flex: 1; overflow: hidden; position: relative; }
 
+    .chapter-bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      display: none;
+      pointer-events: none;
+    }
+    .reader-area.has-bg-video #story-view {
+      background: linear-gradient(
+        to right,
+        transparent 0,
+        transparent calc(50vw - 520px),
+        #0e0e12 calc(50vw - 520px),
+        #0e0e12 calc(50vw + 260px),
+        transparent calc(50vw + 260px)
+      );
+    }
+
     /* ── Character art frames (fixed, like background) ── */
     .art-frame {
       position: fixed;
@@ -417,6 +438,10 @@
 </head>
 <body>
 
+  <video class="chapter-bg-video" id="chapter-bg-video" autoplay loop muted playsinline>
+    <source src="../../assets/harbringer_chapter_background.mp4" type="video/mp4">
+  </video>
+
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <nav class="sidebar" id="sidebar">
@@ -486,7 +511,7 @@
 
     <div class="page-counter" id="page-counter"><span class="current" id="page-current">1</span> / <span id="page-total">28</span></div>
 
-    <div class="reader-area">
+    <div class="reader-area" id="reader-area">
       <embed id="pdf-view" src="chapter1.pdf" type="application/pdf" style="width:100%;height:100%;border:none;display:none;background:#1a1924">
       <div id="story-view">
         <div class="story-content" id="story-content-inner"></div>
@@ -597,9 +622,13 @@
       document.getElementById('story-view').style.display = view === 'story' ? 'block' : 'none';
       document.getElementById('btn-pdf').classList.toggle('active', view === 'pdf');
       document.getElementById('btn-story').classList.toggle('active', view === 'story');
-      const showArt = view === 'story';
+      const bgVideo = document.getElementById('chapter-bg-video');
+      const hasVideo = bgVideo.style.display === 'block';
+      const showArt = view === 'story' && !hasVideo;
       document.getElementById('art-frame-left').style.display = showArt ? 'flex' : 'none';
       document.getElementById('art-frame-right').style.display = showArt ? 'flex' : 'none';
+      if (view !== 'story') bgVideo.pause();
+      else if (hasVideo) bgVideo.play().catch(() => {});
       if (view === 'pdf') document.querySelector('.main-header').classList.remove('header-hidden');
       document.getElementById('tts-controls').style.display = (view === 'story' && ttsAudio) ? 'flex' : 'none';
       if (view === 'pdf') ttsStop();
@@ -639,6 +668,15 @@
 
       document.getElementById('story-view').scrollTop = 0;
       buildProgressBar(data.pages || 0);
+
+      const useVideo = (num === 5 || num === 6);
+      const bgVideo = document.getElementById('chapter-bg-video');
+      const readerArea = document.getElementById('reader-area');
+      bgVideo.style.display = useVideo ? 'block' : 'none';
+      readerArea.classList.toggle('has-bg-video', useVideo);
+      document.getElementById('art-frame-left').style.display = useVideo ? 'none' : (currentView === 'story' ? 'flex' : 'none');
+      document.getElementById('art-frame-right').style.display = useVideo ? 'none' : (currentView === 'story' ? 'flex' : 'none');
+      if (useVideo) bgVideo.play().catch(() => {}); else bgVideo.pause();
 
       if (data.comingSoon) {
         container.innerHTML = header + `
