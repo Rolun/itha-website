@@ -489,7 +489,7 @@
     // ── Carousel ──
     const stories = [
       { title: 'Night Stalker of Velldenar',  img: null,                         link: null,                         soon: true  },
-      { title: 'The Harbringer of Velldenar',  img: 'assets/Alaric_Figure.png', videoLocal: 'assets/Alaric_Cover.webm', video: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.webm', link: 'stories/harbringer/', soon: false },
+      { title: 'The Harbringer of Velldenar',  img: 'assets/Alaric_Figure.png', videoLocal: 'assets/Alaric_Cover.webm', video: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.webm', videoFallbackLocal: 'assets/Alaric_Cover.mp4', videoFallback: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.mp4', link: 'stories/harbringer/', soon: false },
       { title: 'Memories of Velldenar',        img: null,                         link: null,                         soon: true  },
     ];
 
@@ -521,6 +521,8 @@
               <video class="char-figure char-figure-video" muted loop playsinline>
                 ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
                 <source src="${s.video}" type="video/webm">
+                ${s.videoFallbackLocal ? `<source src="${s.videoFallbackLocal}" type="video/mp4">` : ''}
+                ${s.videoFallback ? `<source src="${s.videoFallback}" type="video/mp4">` : ''}
               </video>` : '';
         slot.innerHTML = `
           <a class="char-card clickable" href="${s.link}">
