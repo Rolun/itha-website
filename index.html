@@ -469,6 +469,12 @@
   </footer>
 
   <script>
+    // ── Temporary debug overlay (remove when done) ──
+    const dbg = document.createElement('div');
+    dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.85);color:#fff;font-size:11px;padding:8px;z-index:9999;word-break:break-all;pointer-events:none';
+    document.body.appendChild(dbg);
+    function dbgLog(msg) { dbg.textContent = msg; }
+
     // ── Background video diagnostics ──
     const bgVid = document.querySelector('.char-section-video');
     bgVid.addEventListener('playing', () => console.log('[bg video] playing'));
@@ -523,10 +529,10 @@
       } else {
         const videoEl = s.video ? `
               <video class="char-figure char-figure-video" muted loop playsinline>
-                ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
-                <source src="${s.video}" type="video/webm">
                 ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/quicktime">` : ''}
                 ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/quicktime">` : ''}
+                ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
+                <source src="${s.video}" type="video/webm">
               </video>` : '';
         slot.innerHTML = `
           <a class="char-card clickable" href="${s.link}">
@@ -541,6 +547,8 @@
         if (vid) {
           const sources = vid.querySelectorAll('source');
           if (sources.length) sources[sources.length - 1].addEventListener('error', () => vid.remove());
+          vid.addEventListener('playing', () => dbgLog('Alaric video playing: ' + vid.currentSrc));
+          vid.addEventListener('error',   () => dbgLog('Alaric video error — showing static PNG'));
         }
         // prevent navigation when clicking a non-center slot
         slot.querySelector('a').addEventListener('click', e => {
