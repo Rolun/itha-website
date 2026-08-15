@@ -326,11 +326,6 @@
       max-width: none;
       max-height: none;
     }
-    /* Safari plays WebM but doesn't render VP9 alpha — multiply fakes transparency
-       against the dark background (white × dark = dark, character colors stay visible) */
-    .safari-alpha .char-figure-video {
-      mix-blend-mode: multiply;
-    }
     .pos-center .char-figure-video { display: block; }
     .pos-center .char-figure-img   { display: none; }
     .char-card.clickable:hover .char-figure {
@@ -479,11 +474,6 @@
     document.body.appendChild(dbg);
     function dbgLog(msg) { dbg.textContent = msg; }
 
-    // Safari plays WebM but ignores VP9 alpha — add class to use multiply blend instead
-    if (navigator.vendor === 'Apple Computer, Inc.') {
-      document.documentElement.classList.add('safari-alpha');
-    }
-
     // ── Background video diagnostics ──
     const bgVid = document.querySelector('.char-section-video');
     bgVid.addEventListener('playing', () => console.log('[bg video] playing'));
@@ -538,10 +528,10 @@
       } else {
         const videoEl = s.video ? `
               <video class="char-figure char-figure-video" muted loop playsinline>
-                ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
-                <source src="${s.video}" type="video/webm">
                 ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/quicktime">` : ''}
                 ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/quicktime">` : ''}
+                ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
+                <source src="${s.video}" type="video/webm">
               </video>` : '';
         slot.innerHTML = `
           <a class="char-card clickable" href="${s.link}">
