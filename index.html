@@ -327,8 +327,7 @@
       max-height: none;
     }
     .pos-center .char-figure-video { display: block; }
-    /* hide static img only when a video element is actually present and playable */
-    .pos-center:has(.char-figure-video) .char-figure-img { display: none; }
+    .pos-center .char-figure-img   { display: none; }
     .char-card.clickable:hover .char-figure {
       transform: scale(1.06) translateY(-6px);
       filter:
@@ -529,10 +528,10 @@
       } else {
         const videoEl = s.video ? `
               <video class="char-figure char-figure-video" muted loop playsinline>
-                ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/quicktime">` : ''}
-                ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/quicktime">` : ''}
                 ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
                 <source src="${s.video}" type="video/webm">
+                ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/quicktime">` : ''}
+                ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/quicktime">` : ''}
               </video>` : '';
         slot.innerHTML = `
           <a class="char-card clickable" href="${s.link}">
@@ -542,13 +541,10 @@
             </div>
             <div class="char-label"><div class="char-label-title">${s.title}</div></div>
           </a>`;
-        // if no source is playable, remove video so static img shows as fallback
         const vid = slot.querySelector('.char-figure-video');
         if (vid) {
-          const sources = vid.querySelectorAll('source');
-          if (sources.length) sources[sources.length - 1].addEventListener('error', () => vid.remove());
-          vid.addEventListener('playing', () => dbgLog('Alaric video playing: ' + vid.currentSrc));
-          vid.addEventListener('error',   () => dbgLog('Alaric video error — showing static PNG'));
+          vid.addEventListener('playing', () => dbgLog('Alaric: ' + vid.currentSrc));
+          vid.addEventListener('error',   () => dbgLog('Alaric video error'));
         }
         // prevent navigation when clicking a non-center slot
         slot.querySelector('a').addEventListener('click', e => {
