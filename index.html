@@ -467,20 +467,6 @@
   </footer>
 
   <script>
-    // ── Temporary debug overlay (remove when done) ──
-    const dbg = document.createElement('div');
-    dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.85);color:#fff;font-size:11px;padding:8px;z-index:9999;word-break:break-all;pointer-events:none';
-    document.body.appendChild(dbg);
-    function dbgLog(msg) { dbg.textContent = msg; }
-
-    // ── Background video diagnostics ──
-    const bgVid = document.querySelector('.char-section-video');
-    bgVid.addEventListener('playing', () => dbgLog('bg: playing'));
-    bgVid.addEventListener('error',   () => dbgLog('bg: error'));
-    bgVid.addEventListener('stalled', () => dbgLog('bg: stalled'));
-    bgVid.addEventListener('waiting', () => dbgLog('bg: waiting'));
-    setTimeout(() => { if (!dbg.textContent) dbgLog('bg: no events after 5s'); }, 5000);
-
     // ── Nav drawer ──
     const menuBtn   = document.getElementById('menu-btn');
     const navDrawer = document.getElementById('nav-drawer');
@@ -544,10 +530,8 @@
         const img = slot.querySelector('.char-figure-img');
         if (vid) {
           vid.addEventListener('playing', () => {
-            dbgLog('Alaric: ' + vid.currentSrc);
             if (img) img.style.display = 'none';
           });
-          vid.addEventListener('error', () => dbgLog('Alaric video error'));
         }
         // prevent navigation when clicking a non-center slot
         slot.querySelector('a').addEventListener('click', e => {
@@ -578,7 +562,7 @@
         const vid = slot.querySelector('.char-figure-video');
         const img = slot.querySelector('.char-figure-img');
         if (vid) {
-          if (slot.dataset.pos === 'center') vid.play().catch(e => dbgLog('Alaric play() rejected: ' + e.message));
+          if (slot.dataset.pos === 'center') vid.play().catch(() => {});
           else {
             vid.pause();
             if (img) img.style.display = ''; // restore img when not centered
