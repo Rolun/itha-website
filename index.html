@@ -326,9 +326,9 @@
       max-width: none;
       max-height: none;
     }
-    /* TODO: replace Alaric_Cover.webm with alpha version (re-export from AE as ProRes 4444 RGB+Alpha) */
     .pos-center .char-figure-video { display: block; }
-    .pos-center .char-figure-img   { display: none; }
+    /* hide static img only when a video element is actually present and playable */
+    .pos-center:has(.char-figure-video) .char-figure-img { display: none; }
     .char-card.clickable:hover .char-figure {
       transform: scale(1.06) translateY(-6px);
       filter:
@@ -489,7 +489,11 @@
     // ── Carousel ──
     const stories = [
       { title: 'Night Stalker of Velldenar',  img: null,                         link: null,                         soon: true  },
-      { title: 'The Harbringer of Velldenar',  img: 'assets/Alaric_Figure.png', videoLocal: 'assets/Alaric_Cover.webm', video: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.webm', videoFallbackLocal: 'assets/Alaric_Cover.mp4', videoFallback: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.mp4', link: 'stories/harbringer/', soon: false },
+      { title: 'The Harbringer of Velldenar',  img: 'assets/Alaric_Figure.png',
+        videoLocal: 'assets/Alaric_Cover.webm',          video: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.webm',
+        videoHEVCLocal: 'assets/Alaric_Cover_hevc.mov',  videoHEVC: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover_hevc.mov',
+        videoFallbackLocal: 'assets/Alaric_Cover.mp4',   videoFallback: 'https://pub-c6114c4f6dd1446c9ec91a3b643960f6.r2.dev/Alaric_Cover.mp4',
+        link: 'stories/harbringer/', soon: false },
       { title: 'Memories of Velldenar',        img: null,                         link: null,                         soon: true  },
     ];
 
@@ -521,8 +525,8 @@
               <video class="char-figure char-figure-video" muted loop playsinline>
                 ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
                 <source src="${s.video}" type="video/webm">
-                ${s.videoFallbackLocal ? `<source src="${s.videoFallbackLocal}" type="video/mp4">` : ''}
-                ${s.videoFallback ? `<source src="${s.videoFallback}" type="video/mp4">` : ''}
+                ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/quicktime">` : ''}
+                ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/quicktime">` : ''}
               </video>` : '';
         slot.innerHTML = `
           <a class="char-card clickable" href="${s.link}">
@@ -532,6 +536,12 @@
             </div>
             <div class="char-label"><div class="char-label-title">${s.title}</div></div>
           </a>`;
+        // if no source is playable, remove video so static img shows as fallback
+        const vid = slot.querySelector('.char-figure-video');
+        if (vid) {
+          const sources = vid.querySelectorAll('source');
+          if (sources.length) sources[sources.length - 1].addEventListener('error', () => vid.remove());
+        }
         // prevent navigation when clicking a non-center slot
         slot.querySelector('a').addEventListener('click', e => {
           if (slot.dataset.pos !== 'center') {
