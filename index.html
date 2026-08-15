@@ -327,7 +327,6 @@
       max-height: none;
     }
     .pos-center .char-figure-video { display: block; }
-    .pos-center .char-figure-img   { display: none; }
     .char-card.clickable:hover .char-figure {
       transform: scale(1.06) translateY(-6px);
       filter:
@@ -476,9 +475,11 @@
 
     // ── Background video diagnostics ──
     const bgVid = document.querySelector('.char-section-video');
-    bgVid.addEventListener('playing', () => console.log('[bg video] playing'));
-    bgVid.addEventListener('error',   () => console.error('[bg video] load error', bgVid.error));
-    bgVid.addEventListener('stalled', () => console.warn('[bg video] stalled'));
+    bgVid.addEventListener('playing', () => dbgLog('bg: playing'));
+    bgVid.addEventListener('error',   () => dbgLog('bg: error'));
+    bgVid.addEventListener('stalled', () => dbgLog('bg: stalled'));
+    bgVid.addEventListener('waiting', () => dbgLog('bg: waiting'));
+    setTimeout(() => { if (!dbg.textContent) dbgLog('bg: no events after 5s'); }, 5000);
 
     // ── Nav drawer ──
     const menuBtn   = document.getElementById('menu-btn');
@@ -528,8 +529,6 @@
       } else {
         const videoEl = s.video ? `
               <video class="char-figure char-figure-video" muted loop playsinline>
-                ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/quicktime">` : ''}
-                ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/quicktime">` : ''}
                 ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
                 <source src="${s.video}" type="video/webm">
               </video>` : '';
@@ -542,9 +541,13 @@
             <div class="char-label"><div class="char-label-title">${s.title}</div></div>
           </a>`;
         const vid = slot.querySelector('.char-figure-video');
+        const img = slot.querySelector('.char-figure-img');
         if (vid) {
-          vid.addEventListener('playing', () => dbgLog('Alaric: ' + vid.currentSrc));
-          vid.addEventListener('error',   () => dbgLog('Alaric video error'));
+          vid.addEventListener('playing', () => {
+            dbgLog('Alaric: ' + vid.currentSrc);
+            if (img) img.style.display = 'none';
+          });
+          vid.addEventListener('error', () => dbgLog('Alaric video error'));
         }
         // prevent navigation when clicking a non-center slot
         slot.querySelector('a').addEventListener('click', e => {
@@ -573,9 +576,13 @@
         else { slot.dataset.pos = 'hidden'; }
         // play video when centered, pause otherwise
         const vid = slot.querySelector('.char-figure-video');
+        const img = slot.querySelector('.char-figure-img');
         if (vid) {
-          if (slot.dataset.pos === 'center') vid.play().catch(() => {});
-          else vid.pause();
+          if (slot.dataset.pos === 'center') vid.play().catch(e => dbgLog('Alaric play() rejected: ' + e.message));
+          else {
+            vid.pause();
+            if (img) img.style.display = ''; // restore img when not centered
+          }
         }
       });
     }
