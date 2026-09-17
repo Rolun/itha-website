@@ -327,6 +327,7 @@
       max-height: none;
     }
     .pos-center .char-figure-video { display: block; }
+    .char-figure-wrap:has(.char-figure-video) .char-figure-img { display: none; }
     .char-card.clickable:hover .char-figure {
       transform: scale(1.06) translateY(-6px);
       filter:
@@ -514,7 +515,7 @@
         });
       } else {
         const videoEl = s.video ? `
-              <video class="char-figure char-figure-video" muted loop playsinline>
+              <video class="char-figure char-figure-video" muted loop playsinline poster="${s.img}">
                 ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/mp4; codecs=hvc1">` : ''}
                 ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/mp4; codecs=hvc1">` : ''}
                 ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
@@ -531,9 +532,7 @@
         const vid = slot.querySelector('.char-figure-video');
         const img = slot.querySelector('.char-figure-img');
         if (vid) {
-          vid.addEventListener('playing', () => {
-            if (img) img.style.display = 'none';
-          });
+          vid.load();
         }
         // prevent navigation when clicking a non-center slot
         slot.querySelector('a').addEventListener('click', e => {
@@ -562,13 +561,9 @@
         else { slot.dataset.pos = 'hidden'; }
         // play video when centered, pause otherwise
         const vid = slot.querySelector('.char-figure-video');
-        const img = slot.querySelector('.char-figure-img');
         if (vid) {
           if (slot.dataset.pos === 'center') vid.play().catch(() => {});
-          else {
-            vid.pause();
-            if (img) img.style.display = ''; // restore img when not centered
-          }
+          else vid.pause();
         }
       });
     }
