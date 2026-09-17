@@ -515,6 +515,8 @@
       } else {
         const videoEl = s.video ? `
               <video class="char-figure char-figure-video" muted loop playsinline>
+                ${s.videoHEVCLocal ? `<source src="${s.videoHEVCLocal}" type="video/mp4; codecs=hvc1">` : ''}
+                ${s.videoHEVC ? `<source src="${s.videoHEVC}" type="video/mp4; codecs=hvc1">` : ''}
                 ${s.videoLocal ? `<source src="${s.videoLocal}" type="video/webm">` : ''}
                 <source src="${s.video}" type="video/webm">
               </video>` : '';
